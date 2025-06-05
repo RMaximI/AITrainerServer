@@ -58,6 +58,8 @@ public class WorkoutServiceNpgsql
         return new WorkoutResponse { Exercises = selectedExercises };
     }
 
+    //Команда для регистрации
+    //curl -X POST http://192.168.50.141:60225/api/workout/register -H "Content-Type: application/json" -d "{\"email\":\"example@example.com\",\"password\":\"123456\",\"username\":\"JohnDoe\",\"height\":180,\"weight\":75,\"age\":25,\"gender\":\"male\",\"primaryGoal\":\"lose weight\",\"fitnessLevel\":\"intermediate\"}"
     public async Task<RegisterResult> RegisterAsync(RegisterDto request)
     {
         _logger.LogDebug("Регистрация пользователя: email: {email}", request.Email);
