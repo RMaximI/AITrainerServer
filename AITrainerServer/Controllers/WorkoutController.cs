@@ -22,30 +22,24 @@ public class WorkoutController : ControllerBase
         return Ok(result);
     }
 
-    /*[HttpPost("register")]
+    [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
-            return BadRequest("Email уже используется");
+        var result = await _service.RegisterAsync(dto);
 
-        var user = new User
+        if (!result.Success)
         {
-            Email = dto.Email,
-            Username = dto.Username,
-            PasswordHash = dto.Password,
-            Age = dto.Age,
-            Weight = dto.Weight,
-            Height = dto.Height,
-            Gender = dto.Gender,
-            FitnessLevel = dto.FitnessLevel,
-            PrimaryGoal = dto.PrimaryGoal
-        };
+            // Можно вернуть 409 или 400, в зависимости от текста ошибки
+            if (result.ErrorMessage.Contains("зарегистрирован"))
+                return Conflict(new { error = result.ErrorMessage });
+            else
+                return BadRequest(new { error = result.ErrorMessage });
+        }
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        return Ok(result.Data);
+    }
 
-        return Ok("Пользователь зарегистрирован");
-    }*/
+
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)

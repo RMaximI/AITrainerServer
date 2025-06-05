@@ -58,9 +58,70 @@ public class WorkoutServiceNpgsql
         return new WorkoutResponse { Exercises = selectedExercises };
     }
 
+    public async Task<RegisterResult> RegisterAsync(RegisterDto request)
+    {
+        _logger.LogDebug("Регистрация пользователя: email: {email}", request.Email);
+
+        try
+        {
+
+
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var cmd = new NpgsqlCommand(@"
+            WITH new_user AS (
+                INSERT INTO public.users (email, password_hash)
+                VALUES (@Email, @Password)
+                RETURNING id
+            )
+            INSERT INTO public.profiles (
+                user_id, username, height_cm, weight_kg, age, gender, goal, level
+            )
+            SELECT
+                id, @Username, @Height, @Weight, @Age, @Gender, @Goal, @ActivityLevel
+            FROM new_user;  
+        ", conn);
+
+            cmd.Parameters.AddWithValue("@Email", request.Email);
+            cmd.Parameters.AddWithValue("@Password", request.Password);
+            cmd.Parameters.AddWithValue("@Username", request.Username);
+            cmd.Parameters.AddWithValue("@Height", request.Height);
+            cmd.Parameters.AddWithValue("@Weight", request.Weight);
+            cmd.Parameters.AddWithValue("@Age", request.Age);
+            cmd.Parameters.AddWithValue("@Gender", request.Gender);
+            cmd.Parameters.AddWithValue("@Goal", request.PrimaryGoal);
+            cmd.Parameters.AddWithValue("@ActivityLevel", request.FitnessLevel);
+
+            var rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+            if (rowsAffected > 0)
+            {
+                _logger.LogInformation("Регистрация прошла успешно для {email}", request.Email);
+                return new RegisterResult { Success = true, Data = request };
+            }
+            else
+            {
+                _logger.LogWarning("Регистрация не удалась: ни одна строка не добавлена.");
+                return new RegisterResult { Success = false, ErrorMessage = "Не удалось зарегистрировать пользователя." };
+            }
+        }
+        catch (PostgresException ex) when (ex.SqlState == "23505") // дубликат email
+        {
+            _logger.LogWarning("Email уже зарегистрирован: {email}", request.Email);
+            return new RegisterResult { Success = false, ErrorMessage = "Такой email уже зарегистрирован." };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Внутренняя ошибка при регистрации.");
+            return new RegisterResult { Success = false, ErrorMessage = "Внутренняя ошибка сервера." };
+        }   
+    }
+
+    //Команда для авторизации пользователя
+    //curl -X POST http://192.168.50.141:60225/api/workout/login -H "Content-Type: application/json" -d "{ \"dto\": { \"email\": \"user1@example.com\", \"password\": \"hash_password_1\" } }"
     public async Task<LoginDto> LoginAsync(LoginDto request)
     {
-        var user = new List<LoginDto>();
         _logger.LogDebug("Проверка пользователя: email: {email}", request.Email);
 
         await using var conn = new NpgsqlConnection(_connectionString);
