@@ -147,6 +147,41 @@ public class WorkoutServiceNpgsql
             return null; // Возвращаем null при неудачной авторизации
         }
     }
+    public async Task<EmailCheckResult> CheckEmailExistsAsync(string email)
+    {
+        _logger.LogDebug("Проверка существования email: {email}", email);
+
+        try
+        {
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var cmd = new NpgsqlCommand(
+                "SELECT COUNT(1) FROM users WHERE email = @Email",
+                conn);
+
+            cmd.Parameters.AddWithValue("@Email", email);
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+
+            bool exists = count > 0;
+            _logger.LogInformation("\n\n\n\nEmail {email} существует: {exists}", email, exists);
+
+            return new EmailCheckResult
+            {
+                Exists = exists,
+                Message = exists ? "Email уже зарегистрирован" : "Email доступен"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при проверке email");
+            return new EmailCheckResult
+            {
+                Exists = false,
+                Message = "Ошибка сервера при проверке email"
+            };
+        }
+    }
 }
 
 

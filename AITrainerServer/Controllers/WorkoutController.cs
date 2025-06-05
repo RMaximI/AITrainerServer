@@ -52,5 +52,27 @@ public class WorkoutController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("check")]
+    public async Task<IActionResult> CheckEmailExists([FromBody] string email)
+    {
+        try
+        {
+            var result = await _service.CheckEmailExistsAsync(email);
+            return Ok(new
+            {
+                exists = result.Exists,
+                message = result.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            
+            return StatusCode(500, new
+            {
+                error = "Internal server error"
+            });
+        }
+    }
+
 
 }
