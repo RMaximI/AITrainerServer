@@ -194,6 +194,32 @@ public class WorkoutServiceNpgsql
     }
 
     /// <summary>
+    /// Определяет максимальное количество упражнений для тренировки
+    /// </summary>
+    private int GetMaxExercisesCount(int durationMinutes, string difficulty)
+    {
+        // Базовое количество упражнений в зависимости от длительности
+        int baseCount = durationMinutes switch
+        {
+            <= 30 => 4,    // Короткая тренировка
+            <= 45 => 6,    // Средняя тренировка
+            <= 60 => 8,    // Длинная тренировка
+            _ => 10        // Очень длинная тренировка
+        };
+
+        // Множитель в зависимости от сложности
+        float difficultyMultiplier = difficulty.ToLower() switch
+        {
+            "easy" => 0.8f,    // Меньше упражнений для легкой тренировки
+            "medium" => 1.0f,  // Стандартное количество
+            "hard" => 1.2f,    // Больше упражнений для сложной тренировки
+            _ => 1.0f
+        };
+
+        return (int)Math.Round(baseCount * difficultyMultiplier);
+    }
+
+    /// <summary>
     /// Создает новую тренировку и связывает её с выбранными упражнениями
     /// </summary>
     /// <param name="userId">ID пользователя</param>
@@ -243,6 +269,18 @@ public class WorkoutServiceNpgsql
             throw new InvalidOperationException("Не удалось подобрать упражнения для тренировки");
         }
 
+        // Проверяем количество упражнений
+        var maxExercises = GetMaxExercisesCount(durationMinutes, difficulty);
+        if (workoutResponse.Exercises.Count > maxExercises)
+        {
+            _logger.LogWarning(
+                "Количество упражнений ({count}) превышает максимально допустимое ({max}) для {duration} минут и сложности {difficulty}",
+                workoutResponse.Exercises.Count, maxExercises, durationMinutes, difficulty);
+            
+            // Оставляем только первые maxExercises упражнений
+            workoutResponse.Exercises = workoutResponse.Exercises.Take(maxExercises).ToList();
+        }
+
         // Начинаем транзакцию
         await using var transaction = await conn.BeginTransactionAsync();
 
@@ -276,7 +314,9 @@ public class WorkoutServiceNpgsql
 
             // Подтверждаем транзакцию
             await transaction.CommitAsync();
-            _logger.LogInformation("Тренировка {workoutId} успешно создана", workoutId);
+            _logger.LogInformation(
+                "Тренировка {workoutId} успешно создана с {count} упражнениями", 
+                workoutId, workoutResponse.Exercises.Count);
 
             return workoutId;
         }
@@ -394,6 +434,232 @@ public class WorkoutServiceNpgsql
             exercises.Count, workoutId);
 
         return exercises;
+    }
+
+    /// <summary>
+    /// Получает данные пользователя по email
+    /// </summary>
+    /// <param name="email">Email пользователя</param>
+    /// <returns>Данные пользователя</returns>
+    public async Task<UserData> GetUserDataByEmailAsync(string email)
+    {
+        _logger.LogDebug("Получение данных пользователя по email: {email}", email);
+
+        await using var conn = new NpgsqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        var cmd = new NpgsqlCommand(@"
+            SELECT 
+                u.id,
+                u.email,
+                p.username,
+                p.height_cm,
+                p.weight_kg,
+                p.age,
+                p.gender,
+                p.goal,
+                p.level
+            FROM users u
+            LEFT JOIN profiles p ON u.id = p.user_id
+            WHERE u.email = @Email;", conn);
+
+        cmd.Parameters.AddWithValue("@Email", email);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException($"Пользователь с email {email} не найден");
+        }
+
+        var userData = new UserData
+        {
+            Id = reader.GetInt32(0),
+            Email = reader.GetString(1),
+            Username = reader.IsDBNull(2) ? "" : reader.GetString(2),
+            Height = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
+            Weight = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+            Age = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+            Gender = reader.IsDBNull(6) ? "" : reader.GetString(6),
+            Goal = reader.IsDBNull(7) ? "" : reader.GetString(7),
+            FitnessLevel = reader.IsDBNull(8) ? "" : reader.GetString(8)
+        };
+
+        _logger.LogInformation("Данные пользователя {email} успешно получены", email);
+        return userData;
+    }
+
+    /// <summary>
+    /// Обновляет данные пользователя
+    /// </summary>
+    /// <param name="email">Email пользователя</param>
+    /// <param name="userData">Новые данные пользователя</param>
+    /// <returns>Обновленные данные пользователя</returns>
+    public async Task<UserData> UpdateUserDataAsync(string email, UserData userData)
+    {
+        _logger.LogDebug("Обновление данных пользователя: {email}", email);
+
+        // Валидация входных данных
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new ArgumentException("Email не может быть пустым", nameof(email));
+        }
+
+        if (userData == null)
+        {
+            throw new ArgumentNullException(nameof(userData), "Данные пользователя не могут быть null");
+        }
+
+        // Валидация полей
+        if (userData.Height < 0)
+        {
+            throw new ArgumentException("Рост не может быть отрицательным", nameof(userData.Height));
+        }
+
+        if (userData.Weight < 0)
+        {
+            throw new ArgumentException("Вес не может быть отрицательным", nameof(userData.Weight));
+        }
+
+        if (userData.Age < 0 || userData.Age > 120)
+        {
+            throw new ArgumentException("Некорректный возраст", nameof(userData.Age));
+        }
+
+        if (!string.IsNullOrEmpty(userData.Gender) && 
+            !new[] { "male", "female", "other" }.Contains(userData.Gender.ToLower()))
+        {
+            throw new ArgumentException("Некорректное значение пола", nameof(userData.Gender));
+        }
+
+        if (!string.IsNullOrEmpty(userData.Goal) && 
+            !new[] { "weight_loss", "muscle_gain", "endurance", "strength", "general_fitness" }.Contains(userData.Goal.ToLower()))
+        {
+            throw new ArgumentException("Некорректная цель тренировок", nameof(userData.Goal));
+        }
+
+        if (!string.IsNullOrEmpty(userData.FitnessLevel) && 
+            !new[] { "beginner", "intermediate", "advanced" }.Contains(userData.FitnessLevel.ToLower()))
+        {
+            throw new ArgumentException("Некорректный уровень подготовки", nameof(userData.FitnessLevel));
+        }
+
+        await using var conn = new NpgsqlConnection(_connectionString);
+        try
+        {
+            await conn.OpenAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка подключения к базе данных");
+            throw new InvalidOperationException("Не удалось подключиться к базе данных", ex);
+        }
+
+        // Начинаем транзакцию
+        await using var transaction = await conn.BeginTransactionAsync();
+
+        try
+        {
+            // Проверяем существование пользователя
+            var checkCmd = new NpgsqlCommand(@"
+                SELECT id FROM users WHERE email = @Email;", conn, transaction);
+            checkCmd.Parameters.AddWithValue("@Email", email);
+
+            var userId = await checkCmd.ExecuteScalarAsync();
+            if (userId == null)
+            {
+                throw new InvalidOperationException($"Пользователь с email {email} не найден");
+            }
+
+            // Проверяем существование профиля
+            var checkProfileCmd = new NpgsqlCommand(@"
+                SELECT COUNT(*) FROM profiles WHERE user_id = @UserId;", conn, transaction);
+            checkProfileCmd.Parameters.AddWithValue("@UserId", userId);
+
+            var profileExists = Convert.ToInt32(await checkProfileCmd.ExecuteScalarAsync()) > 0;
+
+            if (profileExists)
+            {
+                // Обновляем существующий профиль
+                var updateCmd = new NpgsqlCommand(@"
+                    UPDATE profiles 
+                    SET 
+                        username = @Username,
+                        height_cm = @Height,
+                        weight_kg = @Weight,
+                        age = @Age,
+                        gender = @Gender,
+                        goal = @Goal,
+                        level = @FitnessLevel,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = @UserId;", conn, transaction);
+
+                updateCmd.Parameters.AddWithValue("@UserId", userId);
+                updateCmd.Parameters.AddWithValue("@Username", userData.Username ?? (object)DBNull.Value);
+                updateCmd.Parameters.AddWithValue("@Height", userData.Height);
+                updateCmd.Parameters.AddWithValue("@Weight", userData.Weight);
+                updateCmd.Parameters.AddWithValue("@Age", userData.Age);
+                updateCmd.Parameters.AddWithValue("@Gender", userData.Gender ?? (object)DBNull.Value);
+                updateCmd.Parameters.AddWithValue("@Goal", userData.Goal ?? (object)DBNull.Value);
+                updateCmd.Parameters.AddWithValue("@FitnessLevel", userData.FitnessLevel ?? (object)DBNull.Value);
+
+                await updateCmd.ExecuteNonQueryAsync();
+            }
+            else
+            {
+                // Создаем новый профиль
+                var insertCmd = new NpgsqlCommand(@"
+                    INSERT INTO profiles (
+                        user_id, username, height_cm, weight_kg, 
+                        age, gender, goal, level, created_at, updated_at
+                    ) VALUES (
+                        @UserId, @Username, @Height, @Weight,
+                        @Age, @Gender, @Goal, @FitnessLevel,
+                        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                    );", conn, transaction);
+
+                insertCmd.Parameters.AddWithValue("@UserId", userId);
+                insertCmd.Parameters.AddWithValue("@Username", userData.Username ?? (object)DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@Height", userData.Height);
+                insertCmd.Parameters.AddWithValue("@Weight", userData.Weight);
+                insertCmd.Parameters.AddWithValue("@Age", userData.Age);
+                insertCmd.Parameters.AddWithValue("@Gender", userData.Gender ?? (object)DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@Goal", userData.Goal ?? (object)DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@FitnessLevel", userData.FitnessLevel ?? (object)DBNull.Value);
+
+                await insertCmd.ExecuteNonQueryAsync();
+            }
+
+            // Фиксируем транзакцию
+            await transaction.CommitAsync();
+
+            // Получаем обновленные данные
+            var result = await GetUserDataByEmailAsync(email);
+            _logger.LogInformation("Данные пользователя {email} успешно обновлены", email);
+            return result;
+        }
+        catch (PostgresException ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Ошибка базы данных при обновлении данных пользователя");
+            
+            switch (ex.SqlState)
+            {
+                case "23505": // unique_violation
+                    throw new InvalidOperationException("Нарушение уникальности данных", ex);
+                case "23503": // foreign_key_violation
+                    throw new InvalidOperationException("Нарушение целостности данных", ex);
+                case "23502": // not_null_violation
+                    throw new InvalidOperationException("Обязательные поля не могут быть пустыми", ex);
+                default:
+                    throw new InvalidOperationException("Ошибка при обновлении данных в базе данных", ex);
+            }
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Непредвиденная ошибка при обновлении данных пользователя");
+            throw new InvalidOperationException("Произошла ошибка при обновлении данных пользователя", ex);
+        }
     }
 }
 

@@ -159,4 +159,96 @@ public class WorkoutController : ControllerBase
             return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
         }
     }
+
+    [HttpGet("user/{email}")]
+    public async Task<IActionResult> GetUserData(string email)
+    {
+        try
+        {
+            _logger.LogInformation("Получение данных пользователя по email: {email}", email);
+            var userData = await _service.GetUserDataByEmailAsync(email);
+            return Ok(userData);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Ошибка при получении данных пользователя");
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Внутренняя ошибка при получении данных пользователя");
+            return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+        }
+    }
+
+    [HttpPut("user/{email}")]
+    public async Task<IActionResult> UpdateUserData(string email, [FromBody] UserData userData)
+    {
+        try
+        {
+            _logger.LogInformation("Обновление данных пользователя: {email}", email);
+            
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return BadRequest(new { error = "Email не может быть пустым" });
+            }
+
+            if (userData == null)
+            {
+                return BadRequest(new { error = "Данные пользователя не могут быть пустыми" });
+            }
+
+            // Валидация обязательных полей
+            if (userData.Height < 0)
+            {
+                return BadRequest(new { error = "Рост не может быть отрицательным" });
+            }
+
+            if (userData.Weight < 0)
+            {
+                return BadRequest(new { error = "Вес не может быть отрицательным" });
+            }
+
+            if (userData.Age < 0 || userData.Age > 120)
+            {
+                return BadRequest(new { error = "Некорректный возраст" });
+            }
+
+            if (!string.IsNullOrEmpty(userData.Gender) && 
+                !new[] { "male", "female", "other" }.Contains(userData.Gender.ToLower()))
+            {
+                return BadRequest(new { error = "Некорректное значение пола" });
+            }
+
+            if (!string.IsNullOrEmpty(userData.Goal) && 
+                !new[] { "weight_loss", "muscle_gain", "endurance", "strength", "general_fitness" }.Contains(userData.Goal.ToLower()))
+            {
+                return BadRequest(new { error = "Некорректная цель тренировок" });
+            }
+
+            if (!string.IsNullOrEmpty(userData.FitnessLevel) && 
+                !new[] { "beginner", "intermediate", "advanced" }.Contains(userData.FitnessLevel.ToLower()))
+            {
+                return BadRequest(new { error = "Некорректный уровень подготовки" });
+            }
+
+            var updatedUserData = await _service.UpdateUserDataAsync(email, userData);
+            return Ok(updatedUserData);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Ошибка валидации данных пользователя");
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Ошибка при обновлении данных пользователя");
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Внутренняя ошибка при обновлении данных пользователя");
+            return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+        }
+    }
 }
