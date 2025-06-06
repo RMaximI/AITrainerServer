@@ -134,18 +134,26 @@ public class WorkoutServiceNpgsql
         cmd.Parameters.AddWithValue("@Email", request.Email);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        await reader.ReadAsync();
 
-        if (reader.GetString(0) == request.Email && reader.GetString(1) == request.Password)
+        if (await reader.ReadAsync())
         {
-            _logger.LogInformation("Пользователь {email} успешно авторизован", request.Email);
-            return request; // Возвращаем пользователя при успешной авторизации
+            string dbEmail = reader.GetString(0);
+            string dbPassword = reader.GetString(1);
+
+            if (dbEmail == request.Email && dbPassword == request.Password)
+            {
+                _logger.LogInformation("Пользователь {email} успешно авторизован", request.Email);
+                return request;
+            }
         }
         else
         {
-            _logger.LogWarning("Не удалось авторизовать пользователя: неверный email или пароль");
-            return null; // Возвращаем null при неудачной авторизации
+            _logger.LogWarning("Пользователь {email} не найден", request.Email);
         }
+
+        _logger.LogWarning("Неверные учетные данные для {email}", request.Email);
+        return null;
+
     }
     public async Task<EmailCheckResult> CheckEmailExistsAsync(string email)
     {
