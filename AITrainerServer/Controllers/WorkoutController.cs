@@ -221,7 +221,7 @@ public class WorkoutController : ControllerBase
             }
 
             if (!string.IsNullOrEmpty(userData.Goal) && 
-                !new[] { "weight_loss", "muscle_gain", "endurance", "strength", "general_fitness" }.Contains(userData.Goal.ToLower()))
+                !new[] { "weight loss", "muscle improvement", "improve physical form", "improve strength" }.Contains(userData.Goal.ToLower()))
             {
                 return BadRequest(new { error = "Некорректная цель тренировок" });
             }

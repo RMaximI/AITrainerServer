@@ -192,36 +192,29 @@ public class WorkoutServiceNpgsql
             };
         }
     }
-
-    /// <summary>
-    /// Определяет максимальное количество упражнений для тренировки
-    /// </summary>
     private int GetMaxExercisesCount(int durationMinutes, string difficulty)
     {
         // Базовое количество упражнений в зависимости от длительности
         int baseCount = durationMinutes switch
         {
-            <= 30 => 4,    // Короткая тренировка
-            <= 45 => 6,    // Средняя тренировка
-            <= 60 => 8,    // Длинная тренировка
-            _ => 10        // Очень длинная тренировка
+            <= 30 => 4,  
+            <= 45 => 6,   
+            <= 60 => 8,    
+            _ => 10       
         };
 
         // Множитель в зависимости от сложности
         float difficultyMultiplier = difficulty.ToLower() switch
         {
-            "easy" => 0.8f,    // Меньше упражнений для легкой тренировки
-            "medium" => 1.0f,  // Стандартное количество
-            "hard" => 1.2f,    // Больше упражнений для сложной тренировки
+            "easy" => 0.8f,   
+            "medium" => 1.0f,  
+            "hard" => 1.2f,   
             _ => 1.0f
         };
 
         return (int)Math.Round(baseCount * difficultyMultiplier);
     }
 
-    /// <summary>
-    /// Создает новую тренировку и связывает её с выбранными упражнениями
-    /// </summary>
     /// <param name="userId">ID пользователя</param>
     /// <param name="title">Название тренировки</param>
     /// <param name="description">Описание тренировки</param>
@@ -532,7 +525,7 @@ public class WorkoutServiceNpgsql
         }
 
         if (!string.IsNullOrEmpty(userData.Goal) && 
-            !new[] { "weight_loss", "muscle_gain", "endurance", "strength", "general_fitness" }.Contains(userData.Goal.ToLower()))
+            !new[] { "weight loss", "muscle improvement", "improve physical form", "improve strength"}.Contains(userData.Goal.ToLower()))
         {
             throw new ArgumentException("Некорректная цель тренировок", nameof(userData.Goal));
         }
