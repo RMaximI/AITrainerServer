@@ -6,7 +6,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://192.168.50.141:60224;http://192.168.50.141:60225;http://192.168.50.141:60226"
+      "applicationUrl": "https://192.168.50.64:60224;http://192.168.50.64:60225;http://192.168.50.64:60226"
     }
   }
 }

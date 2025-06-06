@@ -132,20 +132,26 @@ public class WorkoutServiceNpgsql
         await conn.OpenAsync();
 
         var cmd = new NpgsqlCommand(
-            "SELECT email, password_hash FROM users WHERE email = @Email", conn);
+            "SELECT id, email, password_hash FROM users WHERE email = @Email", conn);
         cmd.Parameters.AddWithValue("@Email", request.Email);
 
         await using var reader = await cmd.ExecuteReaderAsync();
 
         if (await reader.ReadAsync())
         {
-            string dbEmail = reader.GetString(0);
-            string dbPassword = reader.GetString(1);
+            int userId = reader.GetInt32(0);
+            string dbEmail = reader.GetString(1);
+            string dbPassword = reader.GetString(2);
 
             if (dbEmail == request.Email && dbPassword == request.Password)
             {
                 _logger.LogInformation("Пользователь {email} успешно авторизован", request.Email);
-                return request;
+                return new LoginDto 
+                { 
+                    Id = userId,
+                    Email = request.Email,
+                    Password = request.Password
+                };
             }
         }
         else
@@ -155,7 +161,6 @@ public class WorkoutServiceNpgsql
 
         _logger.LogWarning("Неверные учетные данные для {email}", request.Email);
         return null;
-
     }
     public async Task<EmailCheckResult> CheckEmailExistsAsync(string email)
     {
