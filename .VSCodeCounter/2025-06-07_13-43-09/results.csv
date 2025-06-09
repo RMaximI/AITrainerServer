@@ -1,0 +1,21 @@
+"filename", "language", "JSON", "MS SQL", "C#", "XML", "comment", "blank", "total"
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\AITrainerServer.csproj", "XML", 0, 0, 0, 16, 0, 4, 20
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Controllers\WorkoutController.cs", "C#", 0, 0, 224, 0, 2, 28, 254
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Data\AppDbContext.cs", "C#", 0, 0, 504, 0, 61, 100, 665
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Logger\RequestLoggingMiddleware.cs", "C#", 0, 0, 16, 0, 0, 5, 21
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\EmailCheckResult.cs", "C#", 0, 0, 8, 0, 0, 1, 9
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\LoginDto.cs", "C#", 0, 0, 9, 0, 0, 1, 10
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\RegisterDto.cs", "C#", 0, 0, 16, 0, 0, 1, 17
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\RegisterResult.cs", "C#", 0, 0, 9, 0, 0, 2, 11
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\User.cs", "C#", 0, 0, 16, 0, 0, 2, 18
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\UserData.cs", "C#", 0, 0, 13, 0, 0, 1, 14
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\Workout.cs", "C#", 0, 0, 9, 0, 0, 1, 10
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutCreateRequest.cs", "C#", 0, 0, 23, 0, 0, 8, 31
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutDate.cs", "C#", 0, 0, 8, 0, 0, 1, 9
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutExercise.cs", "C#", 0, 0, 12, 0, 0, 1, 13
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutRequest.cs", "C#", 0, 0, 8, 0, 0, 1, 9
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutResponse.cs", "C#", 0, 0, 5, 0, 0, 1, 6
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Program.cs", "C#", 0, 0, 25, 0, 3, 8, 36
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Properties\launchSettings.json", "JSON", 12, 0, 0, 0, 0, 0, 12
+"c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\database.sql", "MS SQL", 0, 274, 0, 0, 261, 198, 733
+"Total", "-", 12, 274, 905, 16, 327, 364, 1898

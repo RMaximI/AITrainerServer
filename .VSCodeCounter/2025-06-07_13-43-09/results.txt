@@ -1,0 +1,53 @@
+Date : 2025-06-07 13:43:09
+Directory : c:\Users\rusak\source\repos\RMaximI\AITrainerServer
+Total : 19 files,  1207 codes, 327 comments, 364 blanks, all 1898 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C#       |         16 |        905 |         66 |        162 |      1,133 |
+| MS SQL   |          1 |        274 |        261 |        198 |        733 |
+| XML      |          1 |         16 |          0 |          4 |         20 |
+| JSON     |          1 |         12 |          0 |          0 |         12 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                   | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                      |         19 |      1,207 |        327 |        364 |      1,898 |
+| AITrainerServer                                                                                        |         19 |      1,207 |        327 |        364 |      1,898 |
+| AITrainerServer (Files)                                                                                |          3 |        315 |        264 |        210 |        789 |
+| AITrainerServer\Controllers                                                                            |          1 |        224 |          2 |         28 |        254 |
+| AITrainerServer\Data                                                                                   |          1 |        504 |         61 |        100 |        665 |
+| AITrainerServer\Logger                                                                                 |          1 |         16 |          0 |          5 |         21 |
+| AITrainerServer\Models                                                                                 |         12 |        136 |          0 |         21 |        157 |
+| AITrainerServer\Properties                                                                             |          1 |         12 |          0 |          0 |         12 |
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                               | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\AITrainerServer.csproj             | XML      |         16 |          0 |          4 |         20 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Controllers\WorkoutController.cs   | C#       |        224 |          2 |         28 |        254 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Data\AppDbContext.cs               | C#       |        504 |         61 |        100 |        665 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Logger\RequestLoggingMiddleware.cs | C#       |         16 |          0 |          5 |         21 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\EmailCheckResult.cs         | C#       |          8 |          0 |          1 |          9 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\LoginDto.cs                 | C#       |          9 |          0 |          1 |         10 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\RegisterDto.cs              | C#       |         16 |          0 |          1 |         17 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\RegisterResult.cs           | C#       |          9 |          0 |          2 |         11 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\User.cs                     | C#       |         16 |          0 |          2 |         18 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\UserData.cs                 | C#       |         13 |          0 |          1 |         14 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\Workout.cs                  | C#       |          9 |          0 |          1 |         10 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutCreateRequest.cs     | C#       |         23 |          0 |          8 |         31 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutDate.cs              | C#       |          8 |          0 |          1 |          9 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutExercise.cs          | C#       |         12 |          0 |          1 |         13 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutRequest.cs           | C#       |          8 |          0 |          1 |          9 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Models\WorkoutResponse.cs          | C#       |          5 |          0 |          1 |          6 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Program.cs                         | C#       |         25 |          3 |          8 |         36 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\Properties\launchSettings.json     | JSON     |         12 |          0 |          0 |         12 |
+| c:\Users\rusak\source\repos\RMaximI\AITrainerServer\AITrainerServer\database.sql                       | MS SQL   |        274 |        261 |        198 |        733 |
+| Total                                                                                                  |          |      1,207 |        327 |        364 |      1,898 |
++--------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
